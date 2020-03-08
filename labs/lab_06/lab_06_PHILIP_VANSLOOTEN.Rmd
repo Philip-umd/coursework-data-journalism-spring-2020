@@ -478,6 +478,41 @@ ggsave("mingo_pills.png", plot=last_plot())
 "Baltimore County, Baltimore City, Anne Arundel County had high number of opioids relative to population in 2012".  Create the same graphic, but instead of showing Maryland counties, show West Virginia counties. Adjust the title to reflect what the data shows.   You'll need to created a subset of the arcos_county_pills_per_year to do this, as well as pull in WV 2012 population data from the ARCOS api. 
 
 ```{r}
+# Step 1: Ask a question - What counties in West Virginia had a disproportionately large number of opioids shipped relative to their populaiton size in 2012?
+
+#Step 2: Create table 1 - West Virginia counties; pills received; for 2012.
+
+west_virginia_pills_2012 <- arcos_county_pills_per_year %>%
+  filter(buyer_state == "WV", year=="2012") %>%
+  select(buyer_county, year, dosage_unit)
+
+#Step 3: Create table 2 -- WV counties; population data; 2012
+
+west_virginia_population_2012 <- county_population(key = key) %>%
+  clean_names() %>%
+  filter(buyer_state == "WV", year=="2012") %>%
+  select(buyer_county, population)
+
+#Step 4: Create a combined table using the inner join function.
+
+west_virginia_2012<- west_virginia_pills_2012 %>%
+  inner_join(west_virginia_population_2012, by=("buyer_county")) %>%
+  select(buyer_county, dosage_unit, population)
+
+#ANSWER:Raleigh and Logan counties, WV had high numbers of opioids relative to populations in 2012
+
+#Step 5: Create scatterplot chart.
+
+ggplot(west_virginia_2012) +
+  geom_point(aes(population, dosage_unit)) +
+  labs(x="2012 Population", y="Total Pills in 2012", title="Raleigh and Logan counties, WV had high numbers of opioids relative to populations in 2012", caption = "Source: DEA ARCOS database, via Washington Post", fill="buyer_county") +
+  scale_y_continuous(labels = comma) +
+  scale_x_continuous(labels = comma) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  geom_smooth(aes(population, dosage_unit), method = "lm", se = FALSE) +
+   geom_text_repel(aes(population, dosage_unit, label=buyer_county),
+                  subset(west_virginia_2012, population > 25000))
+
 
 
 
