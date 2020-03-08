@@ -78,7 +78,7 @@ We're loading four packages today: the Tidyverse (for general data science goodn
 #install arcos package [no need to install others, just here for demonstration]
 #install.packages('tidyverse')
 #install.packages('janitor')
-install.packages('arcos')
+#install.packages('arcos')
 
 # Load Tidyverse, Janitor and arcos
 library(tidyverse)
@@ -512,8 +512,6 @@ ggplot(west_virginia_2012) +
   geom_smooth(aes(population, dosage_unit), method = "lm", se = FALSE) +
    geom_text_repel(aes(population, dosage_unit, label=buyer_county),
                   subset(west_virginia_2012, population > 25000))
-
-
 
 
 ```
