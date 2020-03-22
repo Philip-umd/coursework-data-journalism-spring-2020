@@ -82,6 +82,23 @@ We're also going to load two new packages: [mapview](https://r-spatial.github.io
 
 # Load Tidyverse, janitor and arcos, tidycensus, mapview, ggthemes, scales
 
+#Install the suite of packages below:
+#install.packages('tidyverse')
+#install.packages('janitor')
+#install.packages('arcos')
+#install.packages('tidycensus')
+#install.packages('scales')
+#install.packages('mapview')
+#install.packages('ggthemes')
+
+# load the suite of packages below:
+library(tidyverse)
+library(janitor)
+library(arcos)
+library(tidycensus)
+library(mapview)
+library(ggthemes)
+library(scales)
 
 ```
 
@@ -139,7 +156,8 @@ not_in_population <- arcos_county_pills_per_year %>%
 **Task**: Examine the not_in_population table.  Write a few sentences explaining patterns you see in which records show up in the pills table, but not in population table.  How could this cause problems for you in the future?
 
 ```{r}
-# Comment
+# Patterns in pills table (but not in the population table): There are counties in Arkansas, Connecticut, Georgia and a few other states with either a missing county FIPS code or county name. 
+# Potential problems: Pill data for those states by population will be inaccurate due to missing info.
 ```
 
 Okay, let's put them together. Remember we need to join them on both countyfips and year.  We're also going to throw in buyer_county and buyer_state, which exist in both tables, so we don't get the buyer_county.x and buyer_county.y weirdness.
@@ -173,12 +191,12 @@ First, we need to store our API Key. You can use mine for now, but best to [get 
 
 ```{r}
 # Define API Key
-census_api_key("549950d36c22ff16455fe196bbbd01d63cfbe6cf")
+census_api_key("cbfec00858eabe7be8f5f2e381d263577de3e965")
 
 # If you need to look up variables, this is how you do it
-acs_variables <- load_variables(2017, "acs5" )
+#acs_variables <- load_variables(2017, "acs5" )
 
-```
+``` 
 
 The tidycensus allows us to pull in information from the census by many different geographies -- and pull in the "geometry" for the geographic units we define with it.
 
@@ -188,11 +206,9 @@ First, lets pull in county and state.  The "variable" here is just a count of to
 
 ```{r}
 
-county_geodata <- get_acs(geography = "county",
-              variables = "B01001_001", geometry = TRUE)
+#county_geodata <- get_acs(geography = "county", variables = "B01001_001", geometry = TRUE)
 
-state_geodata <- get_acs(geography = "state",
-              variables = "B01001_001", geometry = TRUE)
+state_geodata <- get_acs(geography = "state", variables = "B01001_001", geometry = TRUE)
 
 ```
 
@@ -233,7 +249,7 @@ state_geodata_shifted %>%
   geom_sf()
 
 # Turn off scientific notation if your legend looks weird
-#options(scipen=999)
+options(scipen=999)
 
 ```
 
@@ -304,7 +320,7 @@ After we've loaded the mapview package, the function we use is called "mapview".
 
 ```{r}
 
-mapview(state_geodata_shifted, zcol = "estimate", legend = TRUE)
+#mapview(state_geodata_shifted, zcol = 'estimate', legend = TRUE)
 
 ```
 
@@ -342,6 +358,9 @@ Okay, first, let's build an interactive version of the map.
 
 ```{r}
 # interactive map code here
+mapview(geo_pills_population_state_2009, zcol='pills_per_person', legend = TRUE)
+
+#I might not have enough memory on my Mac to run this. Not sure what the problem with mapview is.
 ```
 
 Now let's plot a basic version.
@@ -358,7 +377,17 @@ geo_pills_population_state_2009 %>%
 
 # Map code here
 
+geo_pills_population_state_2009  %>%
+  ggplot(aes(fill = pills_per_person)) +
+  geom_sf(lwd = 0) +
+  theme_map() +
+  labs(fill='Pills Per Person',title="West Virginia Received Most Pills in 2009", subtitle = "2009 ARCOS Opioid Data ", caption = "Source: Washington Post") +
+  theme(legend.position="bottom") +
+  scale_fill_viridis_c(option = "cividis",labels = comma)
+
+# Also try "plasma", "viridis", "cividis"
 ```
+
 
 ## Facets
 
