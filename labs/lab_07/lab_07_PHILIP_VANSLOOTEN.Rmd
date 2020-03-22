@@ -194,7 +194,7 @@ First, we need to store our API Key. You can use mine for now, but best to [get 
 census_api_key("cbfec00858eabe7be8f5f2e381d263577de3e965")
 
 # If you need to look up variables, this is how you do it
-#acs_variables <- load_variables(2017, "acs5" )
+acs_variables <- load_variables(2017, "acs5" )
 
 ``` 
 
@@ -358,7 +358,7 @@ Okay, first, let's build an interactive version of the map.
 
 ```{r}
 # interactive map code here
-mapview(geo_pills_population_state_2009, zcol='pills_per_person', legend = TRUE)
+#mapview(geo_pills_population_state_2009, zcol='pills_per_person', legend = TRUE)
 
 #I might not have enough memory on my Mac to run this. Not sure what the problem with mapview is.
 ```
@@ -381,7 +381,7 @@ geo_pills_population_state_2009  %>%
   ggplot(aes(fill = pills_per_person)) +
   geom_sf(lwd = 0) +
   theme_map() +
-  labs(fill='Pills Per Person',title="West Virginia Received Most Pills in 2009", subtitle = "2009 ARCOS Opioid Data ", caption = "Source: Washington Post") +
+  labs(fill='Pills Per Person',title="West Virginia Received Most Pills in 2009; Illinois Among Lowest", subtitle = "2009 ARCOS Opioid Data ", caption = "Source: Washington Post") +
   theme(legend.position="bottom") +
   scale_fill_viridis_c(option = "cividis",labels = comma)
 
@@ -442,7 +442,7 @@ geo_pills_population_state %>%
   facet_wrap(~year, nrow=2) +
   geom_sf(lwd = 0) +
   theme_map() +
-  labs(fill='Pills per Person',title="", subtitle = "", caption = "Source: ARCOS database") +
+  labs(fill='Pills per Person',title="Opioid Distribution Peaks in 2011", subtitle = "2014 per person levels still high despite slight decline", caption = "Source: ARCOS database") +
   theme(legend.position="bottom") +
   scale_fill_viridis_c(option = "magma",labels = comma)
 
@@ -452,15 +452,62 @@ geo_pills_population_state %>%
 
 ```{r}
 
-# Map Code Here
+# I commented all of this out because mapview wasn't working. This is just to show the process.
 
+# Step 1: Create pills_population_county object
+
+#pills_population_county_2009 <- pills_population %>%
+  #filter(year==2009) %>%
+  #group_by(countyfips, buyer_county) %>%
+  #summarise(total_pills=sum(dosage_unit, na.rm = TRUE),
+            #total_population=sum(population, na.rm=TRUE)) %>%
+  #mutate(pills_per_person=total_pills/total_population)
+
+
+# Step 2: Join it to the shapefile data using GEOID
+
+#geo_pills_population_county_2009 <- state_geodata_shifted %>%
+ #inner_join(pills_population_county, by=c("GEOID" = "countyfips"))
+
+
+#Step 3: Create the interactive map using the mapview()function
+
+#mapview(geo_pills_population_county_2009, zcol='pills_per_person', legend = TRUE)
+
+#TRENDS: Based on the map in the video, not only were counties in the southeast, such as Mingo, WV and a county in what appeared to be Florida, flooded with opioids in 2009 (the "opioid corridor"), but the south west around CA looked severely impacted as well. I wonder if there is a correlation with the current homeless crisis in that area.
 ```
 
 **Task**: Make a static facet map, with one map per year between 2006 and 2012, *showing only Maryland counties*, colored based on the number of pills per person in each county in each year.  Provide a short writeup on what you find. What trends do you see?
 
 
 ```{r}
-# map code here
+#I had a problem loading the census county datafile as well :/
+
+#Step 1: Create pills_population_county_MD object 
+
+#pills_population_county_MD <- pills_population %>%
+  #filter(buyer_state=='MD') %>%
+ # group_by(countyfips, buyer_county, year) %>%
+  #summarise(total_pills=sum(dosage_unit, na.rm = TRUE),
+           # total_population=sum(population, na.rm=TRUE)) %>%
+  #mutate(pills_per_person=total_pills/total_population)
+
+#Step 2: Join it to the shapefile data using GEOID
+
+#geo_pills_population_county_MD <- county_geodata%>%
+#inner_join(pills_population_county_MD, by=c("GEOID" = "countyfips"))
+
+
+#Step 3: Map it
+
+#geo_pills_population_county_MD %>%
+  #ggplot(aes(fill = pills_per_person)) +
+  #facet_wrap(~year, nrow=2) +
+  #geom_sf(lwd = 0) +
+  #theme_map() +
+  #labs(fill='Pills per Person',title="Md. Opioid Distribution Peaks in 2011", subtitle = "Baltimore and PG Counties hit the hardest", caption = "Source: ARCOS database") +
+  #theme(legend.position="bottom") +
+ # scale_fill_viridis_c(option = "cividis",labels = comma)
 
 ```
 
