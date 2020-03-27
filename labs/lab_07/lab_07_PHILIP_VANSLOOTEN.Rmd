@@ -91,6 +91,7 @@ We're also going to load two new packages: [mapview](https://r-spatial.github.io
 #install.packages('mapview')
 #install.packages('ggthemes')
 
+
 # load the suite of packages below:
 library(tidyverse)
 library(janitor)
@@ -100,6 +101,7 @@ library(mapview)
 library(ggthemes)
 library(scales)
 
+options(tigris_use_cache = TRUE)
 ```
 
 ## Using the ARCOS R Package
@@ -206,7 +208,7 @@ First, lets pull in county and state.  The "variable" here is just a count of to
 
 ```{r}
 
-#county_geodata <- get_acs(geography = "county", variables = "B01001_001", geometry = TRUE)
+county_geodata <- get_acs(geography = "county", variables = "B01001_001", geometry = TRUE)
 
 state_geodata <- get_acs(geography = "state", variables = "B01001_001", geometry = TRUE)
 
@@ -320,7 +322,7 @@ After we've loaded the mapview package, the function we use is called "mapview".
 
 ```{r}
 
-#mapview(state_geodata_shifted, zcol = 'estimate', legend = TRUE)
+mapview(state_geodata_shifted, zcol = 'estimate', legend = TRUE)
 
 ```
 
@@ -358,9 +360,9 @@ Okay, first, let's build an interactive version of the map.
 
 ```{r}
 # interactive map code here
-#mapview(geo_pills_population_state_2009, zcol='pills_per_person', legend = TRUE)
+mapview(geo_pills_population_state_2009, zcol='pills_per_person', legend = TRUE)
 
-#I might not have enough memory on my Mac to run this. Not sure what the problem with mapview is.
+
 ```
 
 Now let's plot a basic version.
@@ -456,58 +458,59 @@ geo_pills_population_state %>%
 
 # Step 1: Create pills_population_county object
 
-#pills_population_county_2009 <- pills_population %>%
-  #filter(year==2009) %>%
-  #group_by(countyfips, buyer_county) %>%
-  #summarise(total_pills=sum(dosage_unit, na.rm = TRUE),
-            #total_population=sum(population, na.rm=TRUE)) %>%
-  #mutate(pills_per_person=total_pills/total_population)
+pills_population_county_2009 <- pills_population %>%
+  filter(year==2009) %>%
+  group_by(countyfips, buyer_county) %>%
+  summarise(total_pills=sum(dosage_unit, na.rm = TRUE),
+            total_population=sum(population, na.rm=TRUE)) %>%
+  mutate(pills_per_person=total_pills/total_population)
 
 
 # Step 2: Join it to the shapefile data using GEOID
 
-#geo_pills_population_county_2009 <- state_geodata_shifted %>%
- #inner_join(pills_population_county, by=c("GEOID" = "countyfips"))
+geo_pills_population_county_2009 <- county_geodata_shifted %>%
+ inner_join(pills_population_county_2009, by=c("GEOID" = "countyfips"))
 
 
 #Step 3: Create the interactive map using the mapview()function
 
-#mapview(geo_pills_population_county_2009, zcol='pills_per_person', legend = TRUE)
+mapview(geo_pills_population_county_2009, zcol='pills_per_person', legend = TRUE)
 
-#TRENDS: Based on the map in the video, not only were counties in the southeast, such as Mingo, WV and a county in what appeared to be Florida, flooded with opioids in 2009 (the "opioid corridor"), but the south west around CA looked severely impacted as well. I wonder if there is a correlation with the current homeless crisis in that area.
+#Note: map opened in a new web page
+
+#TRENDS: Based on the map, not only were counties in the southeast, such as Mingo, WV and a county in what appeared to be Florida, flooded with opioids in 2009 (the "opioid corridor"), but the west around California to about Colorado looked impacted as well compared to the midwest and northeast regions. I wonder if there is a correlation with the current homeless crisis in that area.
 ```
 
 **Task**: Make a static facet map, with one map per year between 2006 and 2012, *showing only Maryland counties*, colored based on the number of pills per person in each county in each year.  Provide a short writeup on what you find. What trends do you see?
 
 
 ```{r}
-#I had a problem loading the census county datafile as well :/
 
 #Step 1: Create pills_population_county_MD object 
 
-#pills_population_county_MD <- pills_population %>%
-  #filter(buyer_state=='MD') %>%
- # group_by(countyfips, buyer_county, year) %>%
-  #summarise(total_pills=sum(dosage_unit, na.rm = TRUE),
-           # total_population=sum(population, na.rm=TRUE)) %>%
-  #mutate(pills_per_person=total_pills/total_population)
+pills_population_county_MD <- pills_population %>%
+  filter(buyer_state=='MD') %>%
+ group_by(countyfips, buyer_county, year) %>%
+ summarise(total_pills=sum(dosage_unit, na.rm = TRUE),
+           total_population=sum(population, na.rm=TRUE)) %>%
+  mutate(pills_per_person=total_pills/total_population)
 
 #Step 2: Join it to the shapefile data using GEOID
 
-#geo_pills_population_county_MD <- county_geodata%>%
-#inner_join(pills_population_county_MD, by=c("GEOID" = "countyfips"))
+geo_pills_population_county_MD <- county_geodata%>%
+   inner_join(pills_population_county_MD, by=c("GEOID" = "countyfips"))
 
 
 #Step 3: Map it
 
-#geo_pills_population_county_MD %>%
-  #ggplot(aes(fill = pills_per_person)) +
-  #facet_wrap(~year, nrow=2) +
-  #geom_sf(lwd = 0) +
-  #theme_map() +
-  #labs(fill='Pills per Person',title="Md. Opioid Distribution Peaks in 2011", subtitle = "Baltimore and PG Counties hit the hardest", caption = "Source: ARCOS database") +
-  #theme(legend.position="bottom") +
- # scale_fill_viridis_c(option = "cividis",labels = comma)
+geo_pills_population_county_MD %>%
+  ggplot(aes(fill = pills_per_person)) +
+  facet_wrap(~year, nrow=2) +
+  geom_sf(lwd = 0) +
+  theme_map() +
+  labs(fill='Pills per Person',title="Md. Opioid Distribution Peaks in 2010", subtitle = "Allegany, Cecil, Kent counties hit the hardest", caption = "Source: ARCOS database") +
+  theme(legend.position="bottom") +
+  scale_fill_viridis_c(option = "cividis",labels = comma)
 
 ```
 
