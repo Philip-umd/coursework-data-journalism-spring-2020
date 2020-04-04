@@ -68,7 +68,22 @@ We're loading five packages today.
 ```{r}
 
 # Load Tidyverse, janitor and arcos, tidycensus, rvest
-# Use install.packages if necessary
+
+#Install the suite of packages below:
+
+#install.packages('tidyverse')
+#install.packages('janitor')
+#install.packages('arcos')
+#install.packages ('tidycensus')
+#install.packages('rvest')
+
+# load the suite of packages below:
+library(tidyverse)
+library(janitor)
+library(arcos)
+library(tidycensus)
+library(rvest)
+
 
 
 ```
@@ -112,6 +127,16 @@ mingo_downloaded <- read_tsv(mingo_url)
 Write the necessary code to download it directly from that URL and bring it into R as an object called average_county_pills_per_year. Remember, it's a CSV, not a TSV
 
 ```{r}
+
+
+# 1. Location stored in R
+
+average_county_pills_per_year_url <-'https://raw.githubusercontent.com/smussenden/spring20-data-journalism/master/labs/lab_05/data/county_pills_per_year.csv'
+
+
+#2. Using read_csv() to store file as a new object called average_county_pills_per_year
+
+average_county_pills_per_year <- read_csv(average_county_pills_per_year_url)
 
 
 
@@ -209,7 +234,10 @@ Let's examine this table together.  Be sure to watch the video where I'll review
 
 ```{r}
 
+state_population_white_only_2014 <- get_acs(geography = "state", 
+              variables="B02001_002", year=2014, geometry = FALSE )
 ```
+
 
 We're just scratching the surface of what you can do with tidycensus.  There are variables on economics, race, demographics and so much more.  
 
@@ -267,9 +295,12 @@ Okay, it's in now, but it's still kind of a mess. In next week's lab, which is d
 ***Task***: On this page, https://www.cdc.gov/drugoverdose/data/analysis.html, there's a table of national opioid death rates by year from 2000 to 2016.  To see it, click Data Table below the map.  Using the method above, scrape it in and store it as an object called opioid_states_scrape.  
 
 ```{r}
-
-
+opioid_states_scrape <- read_html("https://www.cdc.gov/drugoverdose/data/analysis.html") %>%
+  html_nodes('table') %>%
+  html_table(header=1, fill=TRUE)  %>%
+  as.data.frame()
 ```
+
 
 Again, this will come in a little messy.  We'll clean it up in a future lab.
 
