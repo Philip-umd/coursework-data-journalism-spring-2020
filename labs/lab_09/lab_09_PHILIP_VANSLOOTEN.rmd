@@ -76,6 +76,23 @@ We're also going to load one new package: [corrr](https://github.com/tidymodels/
 
 # Load Tidyverse, janitor and arcos, tidycensus, scales and corrr
 
+#1. Install the suite of packages below:
+
+#install.packages('tidyverse')
+#install.packages('janitor')
+#install.packages('arcos')
+#install.packages ('tidycensus')
+#install.packages('scales')
+#install.packages('corrr')
+
+
+# 2. load the suite of packages below:
+library(tidyverse)
+library(janitor)
+library(arcos)
+library(tidycensus)
+library(scales)
+library(corrr)
 
 ```
 
@@ -300,23 +317,69 @@ Using this joined table, pills_population_income, get to work examining relation
 
 # Group into five buckets and calculate median household income and average pills per person
 
+pills_population_income %>%
+ ungroup() %>%
+ mutate(quintile = ntile(median_household_income, 5)) %>%
+ group_by(quintile) %>%
+ summarise(average_pills_per_person = mean(average_pills_per_person),
+          median_household_income = mean(median_household_income))  
+
 
 ```
 
 ```{r}
 # Make a scatterplot with median household income on one axis, average pills per person on the other.  Each dot is a county. 
 
+ggplot(pills_population_income) +
+  geom_point(aes(average_pills_per_person, median_household_income)) +
+  geom_smooth(aes(average_pills_per_person, median_household_income), method = "lm", se = FALSE)  +
+  scale_y_continuous(labels = comma) +
+  scale_x_continuous(labels = comma)  +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(x="Average Annual Pills Per Person", y="Median Household Income", title="", caption = "Source: DEA ARCOS database, via Washington Post")
+
 ```
 
 
 ```{r}
 
-# Calculate correlation coefficient
+#1. Calculate correlation coefficient
+pills_population_income  %>%
+  ungroup() %>%
+  select(median_household_income, average_pills_per_person) %>%
+  correlate()
 
-# And calculate significance
+
+# 2. And calculate significance
+
+   # Store a dataframe with two columns, death rate, and pills    rate. 
+correlation_income_pills <- pills_population_income %>%
+  ungroup() %>%
+  select(median_household_income, average_pills_per_person) 
+
+  # Test the relationship
+cor.test(correlation_income_pills$median_household_income, correlation_income_pills$average_pills_per_person)
+
+
+
+
+
 
 ```
 
+```{r}
+
+#Question: Did lower income areas tend to get flooded with pills more than wealthier areas? 
+
+#Observations: 
+
+#1 - Buckets: There seems to be a pattern here. The fifth quintile has the counties in the highest income bracket but the lowest average of pills per person shipped to them.  
+#2 - Scatterplot: The slope of the trend line is down, indicating a possible negative correlation. So, in general, as a community's income bracket moved above $75,000, it saw fewer opioid shipments. The dots are pretty densely packed at the lower end of the pill shipments, so in general those receiving more than 100,000 pills were true outliers and in need of more reporting. 
+#3 - Test the relationship: The r is -30, indicating a very mild negative relationship (closer to zero than -1). But the p value is 2.2e-16, which is smaller than .05 and is a significant result. So there is a mild but significant negative correlation here between income level and pill shipments. 
+
+#Answer to question: I wouldn't necessarily write an article on from this angle because of the mild significance -- however, I feel the outliers are skewing the results here. I would feel fairly confident reporting the richer the neighborhood, the few the pills shipped, but I would focus my reporting budget on those outliers. That's more of a story. This result could be interesting context. 
+
+```
 
 ## Submission
 
