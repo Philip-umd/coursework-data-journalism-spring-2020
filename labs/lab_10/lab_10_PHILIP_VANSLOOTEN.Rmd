@@ -69,6 +69,17 @@ Five of these we've loaded previously:
 
 # Load Tidyverse, janitor and rvest
 
+#Install the suite of packages below:
+
+#install.packages('tidyverse')
+#install.packages('janitor')
+#install.packages('rvest’')
+
+
+# load the suite of packages below:
+library(tidyverse)
+library(janitor)
+library(rvest)
 
 ```
 
@@ -148,8 +159,8 @@ The tidyverse has a nice function called na_if() which allows us to convert valu
 opioid_scrape_working <- opioid_scrape %>%
   clean_names() %>%
   remove_empty_rows() %>%
-  filter(row_number() != 36) %>%
-  mutate(opioid_involved_overdose_deaths_100_000_persons1_2017 = na_if(opioid_involved_overdose_deaths_100_000_persons1_2017, "*"))
+  filter(!str_detect(state, "Not included")) %>%
+  mutate(opioid_involved_overdose_deaths_100_000_persons1_2018 = na_if(opioid_involved_overdose_deaths_100_000_persons1_2018, "*"))
 
 opioid_scrape_working 
   
@@ -164,9 +175,9 @@ opioid_scrape_working <- opioid_scrape %>%
   clean_names() %>%
   remove_empty_rows() %>%
   filter(row_number() != 36) %>%
-  mutate(opioid_involved_overdose_deaths_100_000_persons1_2017 = na_if(opioid_involved_overdose_deaths_100_000_persons1_2017, "*")) %>%
-  rename(death_rate = opioid_involved_overdose_deaths_100_000_persons1_2017) %>%
-  rename(rx_rate = opioid_prescriptions_100_persons2_2017)
+  mutate(opioid_involved_overdose_deaths_100_000_persons1_2018 = na_if(opioid_involved_overdose_deaths_100_000_persons1_2018, "*")) %>%
+  rename(death_rate = opioid_involved_overdose_deaths_100_000_persons1_2018) %>%
+  rename(rx_rate = opioid_prescriptions_100_persons2_2018)
 
 opioid_scrape_working 
   
@@ -199,15 +210,15 @@ Aha! Here's what went wrong.  We were trying to do math on a column that looked 
 opioid_scrape_working <- opioid_scrape %>%
   clean_names() %>%
   remove_empty_rows() %>%
-  filter(row_number() != 36) %>%
-  mutate(opioid_involved_overdose_deaths_100_000_persons1_2017 = na_if(opioid_involved_overdose_deaths_100_000_persons1_2017, "*")) %>%
-  rename(death_rate = opioid_involved_overdose_deaths_100_000_persons1_2017) %>%
-  rename(rx_rate = opioid_prescriptions_100_persons2_2017) %>%
+  filter(!str_detect(state, "Not included")) %>%
+  mutate(opioid_involved_overdose_deaths_100_000_persons1_2018 = na_if(opioid_involved_overdose_deaths_100_000_persons1_2018, "*")) %>%
+  rename(death_rate = opioid_involved_overdose_deaths_100_000_persons1_2018) %>%
+  rename(rx_rate = opioid_prescriptions_100_persons2_2018) %>%
   mutate(rx_rate = as.numeric(rx_rate),
          death_rate = as.numeric(death_rate))
 
 opioid_scrape_working 
-  
+   
 ```
 
 Let's examine the column types again with the glimpse function.
@@ -365,11 +376,31 @@ medicare_opioids_clean
 Write your code to clean up medicare_opioids here.
 
 ```{r}
+md_senior_opioids_working2 <- medicare_opioids %>%
+  clean_names() %>%
+  remove_empty_rows() %>%
+  filter(!str_detect(county, "Statewide averages")) %>%
+
+  mutate(medicare_opioid_prescribing_rate = na_if(medicare_opioid_prescribing_rate, "NO VALUE PROVIDED")) %>%
+  mutate(medicare_urban_opioid_prescribing_rate = na_if(medicare_urban_opioid_prescribing_rate, "NO VALUE PROVIDED")) %>%
+  mutate(medicare_urban_opioid_prescribing_rate = na_if(medicare_urban_opioid_prescribing_rate, "ZERO")) %>%
+  mutate(medicare_rural_opioid_prescribing_rate = na_if(medicare_rural_opioid_prescribing_rate, "NO VALUE PROVIDED")) %>%
+  mutate(medicare_opioid_prescribing_rate = as.numeric(medicare_opioid_prescribing_rate),
+         medicare_urban_opioid_prescribing_rate = as.numeric(medicare_urban_opioid_prescribing_rate),           medicare_rural_opioid_prescribing_rate = as.numeric(medicare_rural_opioid_prescribing_rate))     %>% 
+  separate(county, into=c("county","state"), sep=",") %>%
+  mutate(state = str_trim(state)) %>%
+  mutate(county = tolower(county)) %>%
+  mutate(county = str_remove(county, "county")) %>%
+  mutate(state_code = str_sub(fips, start=1L, end=2L)) 
+  
+  
+  
 
 
 
 
 ```
+
 
 
 
