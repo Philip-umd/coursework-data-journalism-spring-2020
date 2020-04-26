@@ -68,7 +68,8 @@ With this enterprise join I would like to
 #install.packages('scales')
 #install.packages('mapview')
 #install.packages('ggthemes')
-install.packages('COVID19')
+#install.packages('COVID19')
+#install.packages ('ggrepel')
 
 # Note: I loaded Census, scales and mapview in case something doesn't work here the way I envision and I need to pivot to the Census data. Basically, it's loaded if I need it.
 
@@ -83,6 +84,7 @@ library('scales')
 library('mapview')
 library('ggthemes')
 library('COVID19')
+library('ggrepel')
 
 
 ```
@@ -133,57 +135,69 @@ LGBTQ_scrape2<- read_html("https://docs.google.com/spreadsheets/d/1M0uuK9UqsgS2r
 ```
 
 
-# Step 4: Create Joined Table for Analysis
+# Step 4: Create Joined Table 
 
 
 ```{r}
 # First, I want to see what type of data is in each current table because they aren't sorting as expected. 
-glimpse(LGBTQ_scrape)
-glimpse(unemployment_scrape)
+#glimpse(LGBTQ_scrape)
+#glimpse(unemployment_scrape)
 
 #I decided to go with an inner join because I want to analyze the areas where the LGBTQ pop and Unemployment tables overlap.
 
-LGBTQ_pop_unemployment<-LGBTQ_scrape %>% inner_join(unemployment_scrape, by="state")
+#LGBTQ_pop_unemployment<-LGBTQ_scrape %>% inner_join(unemployment_scrape, by="state")
 
 # Rhode Island and Tennesee dropped off somewhere. My error -- didn't transfer them over to the LGBTQ scrape. fixing now. 
 
+#LGBTQ_pop_unemployment<-LGBTQ_scrape2 %>% inner_join(unemployment_scrape, by="state")
 
+# Much better. Empty rows finally gone, and rows match number in unemployment table. And the data range matches the source tables on the internet. The only glitch is with the import of the COVID table, but I can scrape that from another source later. 
 
+#Time to analyze for trends, patterns and relationships. 
 
 
 ```
  
- 
- 
- 
-## Data Analysis Project: Discussion
+# Step 5: Analysis
 
-# Review of Method & Guiding Questions
+```{r}
 
+# First an unemployment table. 
 
-# Results
+#unemployment <-LGBTQ_pop_unemployment %>% select (state, march_2020_unemployed_percent)
 
-* Descriptive Data: What patterns stand out?
+# Second an lgbtq pop table.
 
-Line graph:
+#lgbtq_pop <- LGBTQ_pop_unemployment %>% select (state, lgbtq_percent_of_total_pop)
 
-Bar chart:
+# Join them.
 
-Scatterplot:
+#lgbtq_unemployment<- unemployment %>% inner_join(lgbtq_pop, by=("state")) %>% select(state, lgbtq_percent_of_total_pop, march_2020_unemployed_percent) %>% mutate (lgbtq_percent_of_total_pop = as.numeric(lgbtq_percent_of_total_pop), march_2020_unemployed_percent = as.numeric(march_2020_unemployed_percent))
 
-* Statistical Analysis: Are there significant relationships?
+# Create scatterplot
 
-Direction:
+#ggplot(lgbtq_unemployment) + geom_point(aes(lgbtq_percent_of_total_pop, march_2020_unemployed_percent)) + labs(x="% LGBTQ", y="% Unemployed", title = "State-level LGBTQ and Unemployment Data for March 2020", caption = "Sources: Williams Institute and Bureau of Labor Statistics", fill="state") + scale_y_continuous(labels=comma) + scale_x_continuous(labels=comma) + theme(axis.text.x=element_text(angle=45,hjust=1)) + geom_smooth(aes(lgbtq_percent_of_total_pop, march_2020_unemployed_percent), method="lm", se=FALSE) + geom_text_repel(aes(lgbtq_percent_of_total_pop, march_2020_unemployed_percent, label=state))
 
-Strength:
+#Well, this is interesting and unexpected. There doesn't seem to be a pattern, but I didn't realize DC was such a distant outlier. Time for a strength and significance check. 
 
-Significance:
+# Calculate correlation coefficient.
+#lgbtq_unemployment %>% ungroup() %>% select(lgbtq_percent_of_total_pop, march_2020_unemployed_percent) %>% correlate()
+# The r= .30 (general relationship = positive // strength = weak). Interesting.
+
+#Calculate the significance. 
+#correlation_lgbtq_unemployment<-lgbtq_unemployment %>% ungroup() select(lgbtq_percent_of_total_pop, march_2020_unemployed_percent) 
+
+#Test the relationship.
+#cor.test(correlation_lgbtq_unemployment$lgbtq_percent_of_total_pop, correlation_lgbtq_unemployment$march_2020_unemployed_percent)
+# p-value = 0.032 which is smaller than .05 and within the 95% confidence interval. So there is a significant but mildly positive relationship between LGBTQ population size and COVID-related unemployment during March 2020, mainly due to that strong DC outlier. Interesting. And unexpected. Why?
+
+```
 
 
 ## Conclusion: Newsworthy?
  
  
- 
+ This seems newsworthy to me, or at least worthy of further investigation. I would like an experienced data scientist to confirm my findings and help me integrate the COVID numbers to see if they change anything. But as of right now there seems to be a slight indication that COVID-related unemployment is having a negative impact on the LGBTQ community, particularly in D.C. 
  
  
  
