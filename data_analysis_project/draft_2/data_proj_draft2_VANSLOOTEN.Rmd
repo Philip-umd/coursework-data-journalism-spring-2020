@@ -1,0 +1,116 @@
+---
+title: "Data Analysis Project | Analysing LGBTQ Pop, Unemployment and COVID"
+author: "Philip Van Slooten"
+date: "5/07/2020"
+output:
+  html_document:
+  toc: true
+toc_depth: 3
+toc_float: true
+---
+  
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE, paged.print=TRUE)
+```
+
+## Data Analysis Project: LGBTQ Population, Unemployment & COVID-19
+
+# Research Question & Data: What is COVID-19's economic impact on the LGBTQ community?
+
+The purpose of this assignment is to demonstrate the ability to find and independently analyze data in order to answer questions and determine newsworthiness.
+
+For this assignment I have chosen to analyze three data sets: 
+* U.S. LGBT population [https://williamsinstitute.law.ucla.edu/visualization/lgbt-stats/?topic=LGBT&area=32#density], 
+* U.S. Unemployment for March 2020 [https://www.bls.gov/news.release/laus.t01.htm] and
+* U.S. COVID-19 reports for April 25, 2020 [https://www.cdc.gov/covid-data-tracker/index.html].
+
+This is to answer the question of how the pandemic has impacted the American LGBTQ community economically. 
+
+
+# Hypothesis & Preliminary Findings: Is Nevada an outlier?
+
+U.S. LGBTQ aggregate data is difficult to find since both the Census Bureau and the Bureau of Labor Statistics currently refuse to collect demographic information based on sexual orientation or gender identity. 
+
+However, UCLA's Williams Institute does collect and report national LGBTQ data and found high numbers of LGBTQ in lower-income jobs including in the food and hospitality industries which has been hard hit by COVID-19 restrictions. 
+
+Hypothesis: More LGBTQ, Higher Unemployment
+
+As a result, my hypothesis is that April 2020 BLS data when joined with LGBTQ population data should show as LGBTQ population rises, so should unemployment. 
+
+Preliminary Findings: No visual correlation; Nevada outlier
+
+When I visually compared BLS March 2020 unemployment, LGBTQ population and COVID-19 data I did not see a correlation. However, I did see an outlier that fit my hypothesis: Nevada. 
+
+Nevada ranked 2nd in March unemployment, 3rd in LGBTQ population density but 28 in COVID-19 cases. 
+
+What is driving the high LGBTQ unemployment in the state? It could be because most were employed in the hospitality industry out there (which BLS confirmed is the major industry employer for the state).
+
+# Purpose of this Analysis / Enterprise Join
+
+With this enterprise join I would like to 
+
+* confirm that Nevada is an outlier or 
+
+* use tools such as a scatterplot, bar graphs and corrr to see if there is maybe a weak a pattern there that is undetectable by visual analysis alone. 
+
+## Data Analysis: The Investigation
+
+# Step 1: Load the Packages
+
+```{r}
+#Install the suite of packages below:
+
+#install.packages('tidyverse')
+#install.packages('janitor')
+#install.packages('rvest')
+#install.packages('corrr')
+#install.packages('tidycensus')
+#install.packages('scales')
+#install.packages('mapview')
+#install.packages('ggthemes')
+#install.packages('COVID19')
+#install.packages ('ggrepel')
+
+# Note: I loaded Census, scales and mapview in case something doesn't work here the way I envision and I need to pivot to the Census data. Basically, it's loaded if I need it.
+
+#Load the libraries listed below:
+
+library('tidyverse')
+library('janitor')
+library('rvest')
+library('corrr')
+library('tidycensus')
+library('scales')
+library('mapview')
+library('ggthemes')
+library('COVID19')
+library('ggrepel')
+
+
+```
+ 
+# Step 2: Load the Data
+
+```{r}
+
+# Web Scrape 1: March 2020 BLS Table 1. Civilian labor force and unemployment by state and selected area, seasonally adjusted
+
+unemployment_scrape<- read_html("https://www.bls.gov/news.release/laus.t01.htm") %>% html_nodes('table') %>% html_table(header=1, fill=TRUE) %>% as.data.frame()
+
+# Web Scrape 2: CDC COVID Data Tracker -- Total Number of COVID-19 Cases in the US Reported to the CDC, by Jurisdiction (April 25, 2020)
+
+covid19_scrape<- read_html("https://docs.google.com/spreadsheets/d/18ObxLzrXHRijFDpShg-C5c4VBq_AD-NuKVdg-aKusaQ/edit?usp=sharing")%>% html_nodes('table') %>% html_table(header=1, fill=TRUE) %>% as.data.frame()
+
+# Wow -- here's a tip: This didn't originally work lol! I had to copy the table from the CDC website, paste it to a Google spreadsheet, make the sheet link public, then paste the link above to make the scrape work. Hopefully, this tip will save someone else some heartache down the road.
+
+
+# Web Scrape 3: LGBT Proportion of Population - United States 2019 [Williams Institute, UCLA]
+
+LGBTQ_scrape2<- read_html("https://docs.google.com/spreadsheets/d/1M0uuK9UqsgS2rQpzVBm1X0eWcwoiXBS0TUjTUr7oXBg/edit?usp=sharing")%>% html_nodes('table') %>% html_table(header=1, fill=TRUE) %>% as.data.frame() 
+
+# Note: Again, for this to work I had to copy the data into my own Google spreadsheet then link to that table and scrape the data. 
+
+
+```
+ 
+# Step 3: Clean the Data
