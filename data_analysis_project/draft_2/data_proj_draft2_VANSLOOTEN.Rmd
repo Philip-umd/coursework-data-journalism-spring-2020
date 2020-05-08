@@ -171,7 +171,7 @@ cor.test(correlation_lgbtq_unemployment$percent_LGBTQ, correlation_lgbtq_unemplo
 	
 	General findings indicate a mildly positive and slightly significant correlation between LGBTQ population size and COVID-related unemployment. This means that unemployment was slightly higher in states with higher LGBTQ population. However, this trend was most pronounced in Nevada, which also has a leisure-industry based economy. 
 	
-  More research into the number of LGBTQ people employed in Nevada's leisure industry, supplemented by interviews with LGBTQ residents as to where they work and why they chose to live in Nevada, could make for an interesting feature story or profile illustrating COVID's economic impact on the LGBTQ community. 
+  Interviews with a few of Nevada's LGBTQ residents  could make for an interesting feature story or profile illustrating COVID's economic impact on the LGBTQ community.
 
  
  
